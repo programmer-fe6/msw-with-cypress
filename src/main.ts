@@ -1,14 +1,11 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import { mockServer } from './mock/server'
-
-const server = mockServer({ environment: 'development' });
-
-await server.start();
+import { LibConfig } from 'tsv2-library'
 
 const app = createApp(App)
 
 app.use(router)
+app.use(LibConfig)
 
 app.mount('#app')

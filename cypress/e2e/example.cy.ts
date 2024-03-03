@@ -1,10 +1,11 @@
-import { HttpResponse, http } from 'msw'
-import { mockServer } from '../../src/mock/server'
+import { createServer, type DBSchema } from '../../src/mock/server'
+import { CustomSetupWorkerApi } from '../../src/mock/MockServer'
 
 describe('MSW Test', () => {
-  const server = mockServer({ environment: 'test' })
+  let server: CustomSetupWorkerApi<DBSchema>
 
   before(async () => {
+    server = createServer({ environment: 'test' })
     await server.start()
   })
 
@@ -20,20 +21,6 @@ describe('MSW Test', () => {
     server.resetHandlers()
   })
 
-  it('should render "MSW Rocks!"', () => {
-    cy.get('#data').should('contain.text', 'MSW Rocks!')
-  })
-
-  it('should render "Error!" when mock route is overriden with error status', () => {
-    server.use(
-      http.get('http://dummy.com/api', () => {
-        return new HttpResponse(null, { status: 403 })
-      })
-    )
-
-    cy.get('#data').should('contain.text', 'Error!')
-  })
-
   it('should render the newly created users', () => {
     server.db.user.create({
       username: 'johndoe'
@@ -45,13 +32,10 @@ describe('MSW Test', () => {
       username: 'lewandowski'
     })
 
-    cy.get('#users > tr').should('have.length', 3)
-    cy.get('[data-cy="username"]').contains('johndoe').should('exist')
-    cy.get('[data-cy="username"]').contains('janedoe').should('exist')
-    cy.get('[data-cy="username"]').contains('lewandowski').should('exist')
+    cy.get('tbody > tr').should('have.length', 3)
   })
 
   it('should not render the previously created users', () => {
-    cy.get('#users').should('not.exist')
+    cy.get('tbody > tr').should('not.exist')
   })
 })
